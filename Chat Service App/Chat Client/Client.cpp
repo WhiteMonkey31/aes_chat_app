@@ -1,4 +1,5 @@
 #include "Client.h"
+#include "../../include/psk.h"
 #include <FL/fl_ask.H>
 
 Client::Client() { }
@@ -34,6 +35,9 @@ void Client::Login(const std::string & username, const std::string & password) {
 			packet >> server_response;
 
 			if (server_response == (LOGIN | OK)) {
+				// Set encryption key for secure messaging (shared PSK for demo)
+				network->SetEncryptionKey(GetPreSharedKey());
+				logl("Encryption key set (PSK) for session");
 				ChatWindow();
 				break;
 			}
@@ -60,6 +64,9 @@ void Client::Register(std::string username, std::string password) {
 			packet >> server_response;
 
 			if (server_response == (REGISTER | OK)) {
+				// Set encryption key for secure messaging (shared PSK for demo)
+				network->SetEncryptionKey(GetPreSharedKey());
+				logl("Encryption key set (PSK) for session");
 				ChatWindow();
 				break;
 			}
@@ -82,6 +89,16 @@ void Client::Send(const std::string & message) {
 void Client::ProcessPacket(sf::Packet & packet) {
 	std::int8_t type; std::string sender_username, message;
 	packet >> type >> sender_username >> message;
+
+	// Decrypt message if encryption key is set
+	if (!network->GetEncryptionKey().empty()) {
+		try {
+			message = Crypto::decrypt(message, network->GetEncryptionKey());
+		} catch (const std::exception& e) {
+			logl("Decryption error: " + std::string(e.what()));
+			return;
+		}
+	}
 
 	logl("Received from " << sender_username << ": '" << message << "'");
 	if (type == (MESSAGE | OK)) {

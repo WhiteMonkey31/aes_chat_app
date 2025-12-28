@@ -3,6 +3,7 @@
 
 #include "Network.h"
 #include "InterfaceManager.h"
+#include "Crypto.h"
 
 #include "../Standard.h"
 

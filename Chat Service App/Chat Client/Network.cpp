@@ -39,7 +39,21 @@ void Network::Disconnect() {
 
 bool Network::Send(std::int8_t type, const std::string & data) {
 	sf::Packet packet;
-	packet << type << username << data;
+	
+	// Encrypt only the data, keep type and username plaintext for server routing
+	std::string encrypted_data;
+	if (!encryption_key.empty()) {
+		try {
+			encrypted_data = Crypto::encrypt(data, encryption_key);
+		} catch (const std::exception& e) {
+			logl("Encryption error: " + std::string(e.what()));
+			return false;
+		}
+	} else {
+		encrypted_data = data;  // No encryption if key not set
+	}
+	
+	packet << type << username << encrypted_data;
 
 	if (packet.getDataSize() > 0) {
 		if (local_socket.send(packet) == sf::Socket::Status::Done) return true;

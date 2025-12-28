@@ -1,0 +1,50 @@
+Yes — you can re-run those g++ commands each time, but it's easier to automate. Options:
+
+Quick one-off (rebuild only what changed): run the same g++ command you used for the server or client. Example (server):
+
+Set-Location "D:\BS_SE_F23_B\5th Semester (Fall 25)\Information Security (IS) (CS375)\Encyption_programs\aes_project\gui-chat-master\Chat Service App\Chat Server"
+& 'C:\msys64\mingw64\bin\g++.exe' -std=c++20 -fdiagnostics-color=always -g -pedantic-errors -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion main.cpp Server.cpp ServerNetwork.cpp Database.cpp -I "..\..\include" -isystem "..\..\include" -I "C:\msys64\mingw64\include" -L "C:\msys64\mingw64\lib" -lsqlite3 -lsfml-network -lsfml-system -lws2_32 -o ChatServer.exe
+
+
+Client rebuild (run from the Chat Client folder):
+
+
+Set-Location "D:\BS_SE_F23_B\5th Semester (Fall 25)\Information Security (IS) (CS375)\Encyption_programs\aes_project\gui-chat-master\Chat Service App\Chat Client"
+& 'C:\msys64\mingw64\bin\g++.exe' -std=c++20 -fdiagnostics-color=always -g -pedantic-errors -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion main.cpp Client.cpp Network.cpp InterfaceManager.cpp LoginInterface.cpp RegisterInterface.cpp ChatInterface.cpp AddressInterface.cpp -I "..\..\include" -isystem "..\..\include" -I "C:\msys64\mingw64\include" -L "C:\msys64\mingw64\lib" -lsfml-network -lsfml-system -lsodium -lws2_32 -o ChatClient.exe
+
+
+
+Create a reusable PowerShell build script (build_all.ps1) at the repo root (recommended). Put this file in the workspace root and run it to build both:
+
+
+
+# build_all.ps1
+$msysGpp = 'C:\msys64\mingw64\bin\g++.exe'
+$root = Split-Path -Parent $MyInvocation.MyCommand.Path
+
+Push-Location "$root\Chat Service App\Chat Server"
+& $msysGpp -std=c++20 -g -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion main.cpp Server.cpp ServerNetwork.cpp Database.cpp -I "..\..\include" -isystem "..\..\include" -I "C:\msys64\mingw64\include" -L "C:\msys64\mingw64\lib" -lsqlite3 -lsfml-network -lsfml-system -lws2_32 -o ChatServer.exe
+Pop-Location
+
+Push-Location "$root\Chat Service App\Chat Client"
+& $msysGpp -std=c++20 -g -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion main.cpp Client.cpp Network.cpp InterfaceManager.cpp LoginInterface.cpp RegisterInterface.cpp ChatInterface.cpp AddressInterface.cpp -I "..\..\include" -isystem "..\..\include" -I "C:\msys64\mingw64\include" -L "C:\msys64\mingw64\lib" -lsfml-network -lsfml-system -lsodium -lws2_32 -o ChatClient.exe
+Pop-Location
+
+
+
+
+
+Run it from PowerShell (repo root):
+
+.\build_all.ps1
+
+
+
+
+Use VS Code tasks: you already have tasks.json. Open Command Palette → Tasks: Run Task and pick your Build Chat Server / Build Chat Client tasks to rebuild quickly.
+Notes:
+
+If you only changed client code, you only need to rebuild the client; same for server.
+After building, run the server first, then start each client in a separate terminal:
+Server: .\ChatServer.exe (run in Chat Service App\Chat Server)
+Clients: .\ChatClient.exe (run in Chat Service App\Chat Client)
