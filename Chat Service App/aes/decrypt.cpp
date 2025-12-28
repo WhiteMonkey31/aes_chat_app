@@ -1,4 +1,5 @@
 #include "s_box.hpp"
+#include "logger.hpp"
 #include <cstring>
 
 void invSubBytes(uint8_t state[4][4]) {
@@ -72,19 +73,36 @@ void aesDecryptBlock(uint8_t* block, const uint8_t* roundKeys) {
 
     // Round 10
     addRoundKey(state, roundKeys + 160);
+    if (g_logger) {
+        g_logger->logRoundKey(10, roundKeys + 160);
+        g_logger->logState("State after AddRoundKey (Round 10):", state);
+    }
 
     // Rounds 9–1
     for (int round = 9; round >= 1; round--) {
         invShiftRows(state);
+        if (g_logger) g_logger->logState("After invShiftRows:", state);
         invSubBytes(state);
+        if (g_logger) g_logger->logState("After invSubBytes:", state);
         addRoundKey(state, roundKeys + round * 16);
+        if (g_logger) {
+            g_logger->logRoundKey(round, roundKeys + round * 16);
+            g_logger->logState(std::string("State after AddRoundKey (Round ") + std::to_string(round) + "):", state);
+        }
         invMixColumns(state);
+        if (g_logger) g_logger->logState("After invMixColumns:", state);
     }
 
     // Final round
     invShiftRows(state);
+    if (g_logger) g_logger->logState("Final Round - After invShiftRows:", state);
     invSubBytes(state);
+    if (g_logger) g_logger->logState("Final Round - After invSubBytes:", state);
     addRoundKey(state, roundKeys);
+    if (g_logger) {
+        g_logger->logRoundKey(0, roundKeys);
+        g_logger->logState("State after AddRoundKey (Round 0):", state);
+    }
 
     storeState(block, state);
 }

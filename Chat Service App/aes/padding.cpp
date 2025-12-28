@@ -1,4 +1,7 @@
 #include "s_box.hpp"
+#include "logger.hpp"
+
+static int g_message_counter = 0;
 
 std::vector<uint8_t> pkcs7Pad(const std::vector<uint8_t>& data) {
     size_t padLen = 16 - (data.size() % 16);
@@ -71,13 +74,33 @@ std::string aesEncryptString(const std::string& plaintext,
                             const std::string& keyStr) {
     auto key = normalizeKey(keyStr);
     uint8_t roundKeys[176];
+    // prepare logging
+    Logger logger;
+    ++g_message_counter;
+    logger.start(keyStr, plaintext, g_message_counter, "encrypt");
+    g_logger = &logger;
+
     keyExpansion(key.data(), roundKeys);
+
+    // log round keys
+    if (g_logger) {
+        for (int r = 0; r < 11; ++r) {
+            g_logger->logRoundKey(r, roundKeys + r * 16);
+        }
+    }
 
     auto data = pkcs7Pad(stringToBytes(plaintext));
 
     for (size_t i = 0; i < data.size(); i += 16) {
+        if (g_logger) g_logger->logBytesHex("Block input", &data[i], 16);
         aesEncryptBlock(&data[i], roundKeys);
+        if (g_logger) g_logger->logBytesHex("Block output", &data[i], 16);
     }
+
+    // log final cipher hex
+    if (g_logger) g_logger->log(std::string("Cipher (hex): ") + bytesToHex(data));
+    // finish logging
+    g_logger = nullptr;
 
     return bytesToHex(data);
 }
@@ -86,14 +109,37 @@ std::string aesDecryptString(const std::string& hexCipher,
                             const std::string& keyStr) {
     auto key = normalizeKey(keyStr);
     uint8_t roundKeys[176];
+    // prepare logging for decryption
+    Logger logger;
+    ++g_message_counter;
+    logger.start(keyStr, hexCipher, g_message_counter, "decrypt");
+    g_logger = &logger;
+
     keyExpansion(key.data(), roundKeys);
+
+    // log round keys
+    if (g_logger) {
+        for (int r = 0; r < 11; ++r) {
+            g_logger->logRoundKey(r, roundKeys + r * 16);
+        }
+    }
 
     auto data = hexToBytes(hexCipher);
 
     for (size_t i = 0; i < data.size(); i += 16) {
+        if (g_logger) g_logger->logBytesHex("Block input", &data[i], 16);
         aesDecryptBlock(&data[i], roundKeys);
+        if (g_logger) g_logger->logBytesHex("Block output", &data[i], 16);
     }
 
+    // log cipher (hex) as provided
+    if (g_logger) g_logger->log(std::string("Cipher (hex): ") + hexCipher);
+
     pkcs7Unpad(data);
+    // log final plaintext
+    if (g_logger) g_logger->log(std::string("Plaintext: ") + bytesToString(data));
+    // finish logging
+    g_logger = nullptr;
+
     return bytesToString(data);
 }

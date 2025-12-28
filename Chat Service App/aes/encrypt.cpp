@@ -1,4 +1,5 @@
 #include "s_box.hpp"
+#include "logger.hpp"
 #include <cstring>
 
 void rotWord(uint8_t* w) {
@@ -140,19 +141,33 @@ void aesEncryptBlock(uint8_t* block, const uint8_t* roundKeys) {
 
     // Round 0
     addRoundKey(state, roundKeys);
+    if (g_logger) g_logger->logState("State after AddRoundKey (Round 0):", state);
 
     // Rounds 1–9
     for (int round = 1; round <= 9; round++) {
         subBytes(state);
+        if (g_logger) g_logger->logState("After SubBytes:", state);
         shiftRows(state);
+        if (g_logger) g_logger->logState("After ShiftRows:", state);
         mixColumns(state);
+        if (g_logger) g_logger->logState("After MixColumns:", state);
         addRoundKey(state, roundKeys + round * 16);
+        if (g_logger) {
+            g_logger->logRoundKey(round, roundKeys + round * 16);
+            g_logger->logState(std::string("State after AddRoundKey (Round ") + std::to_string(round) + "):", state);
+        }
     }
 
     // Final round (NO MixColumns)
     subBytes(state);
+    if (g_logger) g_logger->logState("Final Round - After SubBytes:", state);
     shiftRows(state);
+    if (g_logger) g_logger->logState("Final Round - After ShiftRows:", state);
     addRoundKey(state, roundKeys + 160);
+    if (g_logger) {
+        g_logger->logRoundKey(10, roundKeys + 160);
+        g_logger->logState("State after AddRoundKey (Round 10):", state);
+    }
 
     storeState(block, state);
 }
