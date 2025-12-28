@@ -1,0 +1,19 @@
+{
+  "configurations": [
+    {
+      "name": "Win32",
+      "includePath": [
+        "${workspaceFolder}/include",         // ← this is your folder where plog exists
+        "${workspaceFolder}/**",
+        "C:/msys64/mingw64/include",         // ← your system includes
+        "C:/msys64/mingw64/include/c++/12.2.0" // ← your g++ version's stdlib
+        // ... more paths as needed
+      ],
+      "defines": [],
+      "compilerPath": "C:/msys64/mingw64/bin/g++.exe",
+      "intelliSenseMode": "windows-gcc-x64",
+      "cppStandard": "c++20"
+    }
+  ],
+  "version": 4
+}

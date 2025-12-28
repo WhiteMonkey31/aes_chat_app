@@ -1,0 +1,14 @@
+{
+  "C_Cpp": {
+    "default": {
+      "diagnostics": {
+        "disabled": ["pp_file_not_found"] // ← suppress false “header not found” errors only
+      }
+    },
+    "codeAnalysis": {
+      "exclude": ["**/include/plog/**"]  // ← avoid deep analysis on plog headers only
+    },
+    "intelliSenseEngine": "disabled"  // fallback to default engine
+//   "C_Cpp.default.intelliSenseMode": "disabled"
+  }
+}
