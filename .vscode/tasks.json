@@ -39,7 +39,7 @@
                 "-lfltk",
                 
                 // libsodium for encryption
-                "-lsodium",
+                
                 "-lsfml-network",
                 "-lsfml-system",
                 "-lws2_32",
@@ -97,6 +97,10 @@
                 "Client.cpp",
                 "Network.cpp",
                 "Crypto.cpp",
+                "..\\aes\\padding.cpp",
+                "..\\aes\\encrypt.cpp",
+                "..\\aes\\decrypt.cpp",
+                "..\\aes\\logger.cpp",
                 "InterfaceManager.cpp",
                 "ChatInterface.cpp",
                 "LoginInterface.cpp",
@@ -107,7 +111,6 @@
                 "-I", "C:\\msys64\\mingw64\\include",
                 "-L", "C:\\msys64\\mingw64\\lib",
                 "-lfltk",
-                "-lsodium",
                 "-lsfml-network",
                 "-lsfml-system",
                 "-lws2_32",

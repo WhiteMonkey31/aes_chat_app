@@ -11,7 +11,8 @@ Logger::~Logger() {
 }
 
 std::string Logger::makeFilename(int msgNo, const std::string& operation) {
-    std::filesystem::create_directories("logs");
+    // Create a predictable logs directory under the aes folder so logs are easy to find
+    std::filesystem::create_directories("..\\aes\\logs");
     using namespace std::chrono;
     auto now = system_clock::now();
     auto t = system_clock::to_time_t(now);
@@ -25,7 +26,7 @@ std::string Logger::makeFilename(int msgNo, const std::string& operation) {
     ss << std::put_time(&tm, "%Y%m%d_%H%M%S");
     ss << "_" << operation;
     ss << "_msg" << msgNo << ".txt";
-    return std::string("logs/") + ss.str();
+    return std::string("..\\aes\\logs\\") + ss.str();
 }
 
 void Logger::start(const std::string& key, const std::string& message, int msgNo, const std::string& operation) {
